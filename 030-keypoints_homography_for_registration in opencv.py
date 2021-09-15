@@ -7,12 +7,28 @@ __license__ = "Feel free to copy, I appreciate if you acknowledge Python for Mic
 
 # Brute-Force Matching with ORB Descriptors
 
+import sys
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
-im1 = cv2.imread('images/monkey_distorted.jpg')          # Image that needs to be registered.
-im2 = cv2.imread('images/monkey.jpg') # trainImage
+src = str(sys.argv[1])
+target = str(sys.argv[2])
+
+print(src)
+print(target)
+
+im1 = cv2.imread(src)          # Image that needs to be registered.
+im2 = cv2.imread(target) # trainImage
+
+rows, cols, dim = im1.shape
+#output_im = cv2.warpPerspective(output_im,M,(int(cols*1.5),int(rows*1.5)))
+scale_percent = 40 # percent of original size
+width = int(im1.shape[1] * scale_percent / 100)
+height = int(im1.shape[0] * scale_percent / 100)
+dim = (width, height)
+im1 = cv2.resize(im1, dim, interpolation = cv2.INTER_AREA)
+im2 = cv2.resize(im2, dim, interpolation = cv2.INTER_AREA)
 
 img1 = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
 img2 = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY)
@@ -24,9 +40,15 @@ orb = cv2.ORB_create(50)  #Registration works with at least 50 points
 kp1, des1 = orb.detectAndCompute(img1, None)  #kp1 --> list of keypoints
 kp2, des2 = orb.detectAndCompute(img2, None)
 
+im1_keypoints = cv2.drawKeypoints(im1, kp1, None, flags=None)
+im2_keypoints = cv2.drawKeypoints(im2, kp2, None, flags=None)
 #Brute-Force matcher takes the descriptor of one feature in first set and is 
 #matched with all other features in second set using some distance calculation.
 # create Matcher object
+
+cv2.imshow("im1_keypoints", im1_keypoints)
+cv2.imshow("im2_keypoints", im2_keypoints)
+cv2.waitKey(0)
 
 matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)
 
